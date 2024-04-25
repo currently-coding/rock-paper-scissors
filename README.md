@@ -1,2 +1,9 @@
 # rock-paper-scissors
-Rock Paper Scissors Game + Algorithm to beat Users by predicting their next move using data from previous moves
+## Summary
+- Rock Paper Scissors Game
+- Algorithm to predict Human Moves
+
+## Concept
+- Connect a Computer move and a result to the next move the human plays
+
+## Implementation Details
