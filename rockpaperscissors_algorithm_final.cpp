@@ -110,16 +110,16 @@ struct Game // stores everything related to one round
         switch (res)
         {
         case Result::DRAW:
-            std::cout << "\nResult: Draw...\n\n";
+            std::cout << "Result: Draw...\n\n";
             score->player1++;
             score->player2++;
             break;
         case Result::PLAYER_1_WINS:
-            std::cout << "\nResult: Player 1 won\n\n";
+            std::cout << "Result: Player 1 won\n\n";
             score->player1++;
             break;
         case Result::PLAYER_2_WINS:
-            std::cout << "\nResult: Player 2 won\n\n";
+            std::cout << "Result: Player 2 won\n\n";
             score->player2++;
             break;
         default:
@@ -210,8 +210,6 @@ struct Probabilities
         int computer_move = last_round.move.to_int(2);
         Result result = last_round.res;
 
-        int result_number = 0;
-
         // incrementing values maps
         values[result][computer_move][human_move]++;
 
@@ -273,11 +271,12 @@ struct Probabilities
 
 void printMoveProbability(const MoveProbability &moveProbability)
 {
-    std::cout << "Human Response: " << moveProbability.move << ", Probability: " << moveProbability.probability << std::endl;
+    std::cout << "|   |   |   Human Response: " << moveProbability.move << ", Probability: " << moveProbability.probability << std::endl;
 }
 
 void printProbabilities(const Probabilities &probabilities)
 {
+    std::cout << "\n\nData:" << std::endl;
     for (const auto &resultEntry : probabilities.probabilities)
     {
         Result result = resultEntry.first;
@@ -285,16 +284,16 @@ void printProbabilities(const Probabilities &probabilities)
         switch (result)
         {
         case Result::PLAYER_1_WINS:
-            std::cout << "Human Win";
+            std::cout << "|   Human Win";
             break;
         case Result::PLAYER_2_WINS:
-            std::cout << "Computer win";
+            std::cout << "|   Computer win";
             break;
         case Result::DRAW:
-            std::cout << "Draw";
+            std::cout << "|   Draw";
             break;
         case Result::UNDEFINED:
-            std::cout << "Undefined";
+            std::cout << "|   Undefined";
             break;
         }
         std::cout << std::endl;
@@ -302,7 +301,7 @@ void printProbabilities(const Probabilities &probabilities)
         for (const auto &computerMoveEntry : resultEntry.second)
         {
             int computerMove = computerMoveEntry.first;
-            std::cout << "Computer Move: " << computerMove << std::endl;
+            std::cout << "|   |    Computer Move: " << computerMove << std::endl;
 
             for (const auto &moveProbability : computerMoveEntry.second)
             {
@@ -310,6 +309,7 @@ void printProbabilities(const Probabilities &probabilities)
             }
         }
     }
+    std::cout << "- - - - - - - - - - " << std::endl;
 }
 
 Item beats(Item to_beat) // returns item that beats input Item
@@ -348,7 +348,6 @@ Item calculate_based_on_prior_moves(Game game, Probabilities &probabilities)
 
     // read through game data - store last computer move and last human move;
     int last_computer_move = game.move.to_int(2);
-    int last_human_move = game.move.to_int(1);
     Result last_result = game.res;
 
     vector<MoveProbability> possible_moves = probabilities.probabilities[last_result][last_computer_move];
@@ -366,7 +365,7 @@ Item calculate_based_on_prior_moves(Game game, Probabilities &probabilities)
     }
 
     Item next_human_move_item = int_to_item(next_human_move);
-    std::cout << "Human will play: " << next_human_move << std::endl;
+    // std::cout << "Human will play: " << next_human_move << std::endl; // debug purposes
 
     return beats(next_human_move_item);
 }
@@ -380,6 +379,8 @@ Item read_item(int player)
     cout << "\nPlayer " << player << ": Rock(1), Paper(2), Scissors(3) ... Shoot: ";
 
     cin >> choice;
+    
+    cout << endl;
 
     Item item = int_to_item(choice);
 
@@ -446,7 +447,6 @@ int main()
 
     int mode = 0; // 1 = ComputerVsHuman, 2 = HumanVsHuman
     Score score = {0, 0};
-    int algorithm = 0;
     std::vector<Score> score_data;
     Probabilities probabilities;
     std::vector<Game> game_data;
@@ -462,8 +462,7 @@ int main()
     int num_rounds = get_rounds();
 
     Item i2;
-    i2 = Item::paper; // against male players
-    i2 = Item::rock;  // against female players
+    i2 = Item::paper; // against male players - switch to paper when playing against female opponents
 
     for (int rounds_played(1); rounds_played <= num_rounds; rounds_played++)
     { // repeat for every round
@@ -477,7 +476,7 @@ int main()
         Game game{Move{i1, i2}, Result::UNDEFINED, score, rounds_played}; // initialisieren des Game Structs `game`
 
         game.res = game.simulate_move(); // Zug durchspielen und Ergebnis in `game.res(ult)` schreiben
-        game.output_result(&score);      // pointer, da der score über das ganze Spiel hinweg gespeichert werden muss
+        game.output_result(&score);      // pointer, da score über das ganze Spiel hinweg gespeichert werden muss
         game.score = score;              // updaten von score
 
         game_data.push_back(game);        // speichern in vector um daten nachher analysieren zu können
@@ -491,7 +490,6 @@ int main()
 
         i2 = calculate_based_on_prior_moves(game, probabilities);
 
-        std::cout << "\n\nData:" << std::endl;
         printProbabilities(probabilities); // for debug purposes
     }
     score.final_result(mode);
